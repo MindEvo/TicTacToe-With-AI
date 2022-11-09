@@ -1,3 +1,5 @@
+import math
+
 GAME_INCOMPLETE = 0
 GAME_DRAW = 1
 GAME_X = 2
@@ -6,6 +8,58 @@ GAME_O = 3
 X = 1
 O = -1
 EMPTY = 0
+
+def possMoves(board: list[list], xPlayer: bool) -> list[list[list]]:
+    """
+    Collects all the possible moves for a player given a board state.
+    Arguments:
+        - board: current state of the board
+        - xPlayer: true for X's move, false for O
+    Return:
+        - moves: list containing all possible moves(board states) for the player
+    """
+    moves = []
+    if xPlayer:
+        for row in range(len(board)):
+            for col in range(len(board[row])):
+                if board[row][col] == EMPTY:
+                    temp = board
+                    temp[row][col] = X
+                    moves.append(temp)
+    else:
+        for row in range(len(board)):
+            for col in range(len(board[row])):
+                if board[row][col] == EMPTY:
+                    temp = board
+                    temp[row][col] = O
+                    moves.append(temp)
+    return moves
+
+def minimax(position: list, depth: int, maxPlayer: bool) -> None:
+    """
+    Arguments:
+        - position: container of all possible move states
+        - depth: how many moves ahead to search
+        - maxPlayer: boolean true if max's turn, false if min's
+    Return:
+        - None
+    """
+    if depth == 0 or GAME_INCOMPLETE not in position:
+        return position
+
+    if maxPlayer:
+        maxEval = -math.inf
+        for child in position:
+            eval = minimax(child, depth - 1, False)
+            maxEval = max(maxEval, eval)
+        return maxEval
+    
+    else:
+        maxEval = math.inf
+        for child in position:
+            eval = minimax(child, depth -1, True)
+            minEval = min(minEval, eval)
+        return minEval
 
 
 def evaluate_game(board):
@@ -128,9 +182,6 @@ def X_move(board):
                 return (row, col)
     print("ERROR! No Valid Move!")
     # END FILLER CODE
-
-def minimax():
-    return
 
 
 board = [[EMPTY, EMPTY, EMPTY],
