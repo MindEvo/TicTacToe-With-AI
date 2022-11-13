@@ -1,4 +1,5 @@
 import math
+from random import choice
 
 GAME_INCOMPLETE = 0
 GAME_DRAW = 1
@@ -9,57 +10,54 @@ X = 1
 O = -1
 EMPTY = 0
 
-def possMoves(board: list[list], xPlayer: bool) -> list[list[list]]:
-    """
-    Collects all the possible moves for a player given a board state.
-    Arguments:
-        - board: current state of the board
-        - xPlayer: true for X's move, false for O
-    Return:
-        - moves: list containing all possible moves(board states) for the player
-    """
-    moves = []
-    if xPlayer:
-        for row in range(len(board)):
-            for col in range(len(board[row])):
-                if board[row][col] == EMPTY:
-                    temp = board
-                    temp[row][col] = X
-                    moves.append(temp)
-    else:
-        for row in range(len(board)):
-            for col in range(len(board[row])):
-                if board[row][col] == EMPTY:
-                    temp = board
-                    temp[row][col] = O
-                    moves.append(temp)
-    return moves
+def minimax(board: list[list[int]], depth: int) -> tuple[int, int]:
+    score = -math.inf
+    for row in range(len(board)):
+        for col in range(len(board[row])):
+            if board[row][col] == EMPTY:
+                board[row][col] = X
+                temp = maxSearch(board, depth + 1)
+                if temp > score:
+                    score = temp
+                    move = (row, col)
+                board[row][col] = EMPTY
+    return move
 
-def minimax(position: list, depth: int, maxPlayer: bool) -> None:
-    """
-    Arguments:
-        - position: container of all possible move states
-        - depth: how many moves ahead to search
-        - maxPlayer: boolean true if max's turn, false if min's
-    Return:
-        - None
-    """
-    if depth == 0 or GAME_INCOMPLETE not in position:
-        return position
 
-    if maxPlayer:
-        maxEval = -math.inf
-        for child in position:
-            eval = minimax(child, depth - 1, False)
-            maxEval = max(maxEval, eval)
-        return maxEval
-    
-    else:
-        maxEval = math.inf
-        for child in position:
-            eval = minimax(child, depth -1, True)
-            minEval = min(minEval, eval)
-        return minEval
+def maxSearch(board: list[list[int]], depth: int) -> int:
+    if evaluate_game(board) == GAME_X:
+        return 10 - depth;
+    elif evaluate_game(board) == GAME_O:
+        return -10 - depth;
+    elif evaluate_game(board) == GAME_DRAW:
+        return 0 - depth;
+
+    score = -math.inf
+    for row in range(len(board)):
+        for col in range(len(board[row])):
+            if board[row][col] == EMPTY:
+                board[row][col] = O
+                score = max(score, minSearch(board, depth + 1))
+                board[row][col] = EMPTY
+    return score
+
+
+def minSearch(board: list[list[int]], depth: int) -> int:
+    if evaluate_game(board) == GAME_X:
+        return 10 - depth;
+    elif evaluate_game(board) == GAME_O:
+        return -10 - depth;
+    elif evaluate_game(board) == GAME_DRAW:
+        return 0 - depth;
+
+    score = math.inf
+    for row in range(len(board)):
+        for col in range(len(board[row])):
+            if board[row][col] == EMPTY:
+                board[row][col] = X
+                score = min(score, maxSearch(board, depth + 1))
+                board[row][col] = EMPTY
+    return score
 
 
 def evaluate_game(board):
@@ -138,10 +136,28 @@ def O_move(board):
     Return:
     - a tuple (i,j) with the row, col of O's chosen move
     """
+    # Z = True
+    # while Z:
+    #     row = input("Enter row: ")
+    #     col = input("Enter col: ")
+    #     if row == '0' or row == '1' or row == '2':
+    #         if col == '0' or col == '1' or col == '2':
+    #             if board[int(row)][int(col)] == EMPTY:
+    #                 Z = False
+    #             else:
+    #                 print("INVALID INPUTS")
+    #         else:
+    #             print("INVALID INPUTS")
+    #     else:
+    #         print("INVALID INPUTS")
+    # return(int(row), int(col))
+
+    possMoves = []
     for row in range(len(board)):
         for col in range(len(board[row])):
             if board[row][col] == EMPTY:
-                return (row, col)
+                possMoves.append((row, col))
+    return choice(possMoves)
     print("ERROR! No Valid Move!")
 
 
@@ -174,19 +190,23 @@ def X_move(board):
     #      X | O | O  ->             -> Score = -15  -> This state is actually not possible, because X always goes first
     #      O | O | X     Depth = 5                      However, in the input state I used, its actually impossible for O to win, as far as I can tell...
     #
-
     # START FILLER CODE, just picks first valid move!
-    for row in range(len(board)):
-        for col in range(len(board[row])):
-            if board[row][col] == EMPTY:
-                return (row, col)
-    print("ERROR! No Valid Move!")
+    # for row in range(len(board)):
+    #     for col in range(len(board[row])):
+    #         if board[row][col] == EMPTY:
+    #             return (row, col)
     # END FILLER CODE
+    move = minimax(board, 0)
+    row = move[0]
+    col = move[1]
+    return(row, col)
+    print("ERROR! No Valid Move!")
 
 
 board = [[EMPTY, EMPTY, EMPTY],
          [EMPTY, EMPTY, EMPTY],
          [EMPTY, EMPTY, EMPTY]]
+
 
 game_winner = GAME_INCOMPLETE
 # Game Loop
@@ -194,12 +214,14 @@ while game_winner == GAME_INCOMPLETE:
     i, j = X_move(board)
     board[i][j] = X
     print_board(board)
+    print("\n")
     game_winner = evaluate_game(board)
     if game_winner != GAME_INCOMPLETE:
         break
     i, j = O_move(board)
     board[i][j] = O
     print_board(board)
+    print("\n")
     game_winner = evaluate_game(board)
 
 # Game is complete, announce winner
@@ -207,5 +229,5 @@ if game_winner == GAME_DRAW:
     print("Game was a Draw!")
 elif game_winner == GAME_X:
     print("X Wins!")
-else:
+elif game_winner == GAME_O:
     print("O Wins!")
