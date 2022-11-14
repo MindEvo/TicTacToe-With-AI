@@ -16,7 +16,7 @@ def minimax(board: list[list[int]], depth: int) -> tuple[int, int]:
         for col in range(len(board[row])):
             if board[row][col] == EMPTY:
                 board[row][col] = X
-                temp = maxSearch(board, depth + 1)
+                temp = minSearch(board, depth + 1)
                 if temp > score:
                     score = temp
                     move = (row, col)
@@ -26,38 +26,42 @@ def minimax(board: list[list[int]], depth: int) -> tuple[int, int]:
 
 def maxSearch(board: list[list[int]], depth: int) -> int:
     if evaluate_game(board) == GAME_X:
-        return 10 - depth;
+        return 10 - depth
     elif evaluate_game(board) == GAME_O:
-        return -10 - depth;
+        return -10 - depth
     elif evaluate_game(board) == GAME_DRAW:
-        return 0 - depth;
+        return 0 - depth
 
-    score = -math.inf
-    for row in range(len(board)):
-        for col in range(len(board[row])):
-            if board[row][col] == EMPTY:
-                board[row][col] = O
-                score = max(score, minSearch(board, depth + 1))
-                board[row][col] = EMPTY
-    return score
-
-
-def minSearch(board: list[list[int]], depth: int) -> int:
-    if evaluate_game(board) == GAME_X:
-        return 10 - depth;
-    elif evaluate_game(board) == GAME_O:
-        return -10 - depth;
-    elif evaluate_game(board) == GAME_DRAW:
-        return 0 - depth;
-
-    score = math.inf
+    maxScore = -math.inf
     for row in range(len(board)):
         for col in range(len(board[row])):
             if board[row][col] == EMPTY:
                 board[row][col] = X
-                score = min(score, maxSearch(board, depth + 1))
+                tempMax = minSearch(board, depth)
+                if tempMax > maxScore:
+                    maxScore = tempMax
                 board[row][col] = EMPTY
-    return score
+    return maxScore
+
+
+def minSearch(board: list[list[int]], depth: int) -> int:
+    if evaluate_game(board) == GAME_X:
+        return 10 - depth
+    elif evaluate_game(board) == GAME_O:
+        return -10 - depth
+    elif evaluate_game(board) == GAME_DRAW:
+        return 0 - depth
+
+    minScore = math.inf
+    for row in range(len(board)):
+        for col in range(len(board[row])):
+            if board[row][col] == EMPTY:
+                board[row][col] = O
+                tempMin = maxSearch(board, depth + 1)
+                if tempMin < minScore:
+                    minScore = tempMin
+                board[row][col] = EMPTY
+    return minScore
 
 
 def evaluate_game(board):
@@ -136,21 +140,21 @@ def O_move(board):
     Return:
     - a tuple (i,j) with the row, col of O's chosen move
     """
-    # Z = True
-    # while Z:
-    #     row = input("Enter row: ")
-    #     col = input("Enter col: ")
-    #     if row == '0' or row == '1' or row == '2':
-    #         if col == '0' or col == '1' or col == '2':
-    #             if board[int(row)][int(col)] == EMPTY:
-    #                 Z = False
-    #             else:
-    #                 print("INVALID INPUTS")
-    #         else:
-    #             print("INVALID INPUTS")
-    #     else:
-    #         print("INVALID INPUTS")
-    # return(int(row), int(col))
+    Z = True
+    while Z:
+        row = input("Enter row: ")
+        col = input("Enter col: ")
+        if row == '0' or row == '1' or row == '2':
+            if col == '0' or col == '1' or col == '2':
+                if board[int(row)][int(col)] == EMPTY:
+                    Z = False
+                else:
+                    print("INVALID INPUTS")
+            else:
+                print("INVALID INPUTS")
+        else:
+            print("INVALID INPUTS")
+    return(int(row), int(col))
 
     possMoves = []
     for row in range(len(board)):
@@ -206,6 +210,10 @@ def X_move(board):
 board = [[EMPTY, EMPTY, EMPTY],
          [EMPTY, EMPTY, EMPTY],
          [EMPTY, EMPTY, EMPTY]]
+
+# board = [[X, O, EMPTY],
+#          [EMPTY, EMPTY, EMPTY],
+#          [EMPTY, EMPTY, EMPTY]]
 
 
 game_winner = GAME_INCOMPLETE
